@@ -142,6 +142,42 @@ In suspend, as the name implies, we use `yield` to suspend the generator while p
 
 If you're using [promises](#promises) or [thunks](#thunks), suspend can resume for you automatically.  However, given that the majority of the Node ecosystem relies on callbacks, suspend provides some simple mechanisms for interacting with callback-based code: [`resume()`](#suspendresume) and [`resumeRaw()`](#suspendresumeraw).
 
+You can also yield generator functions or iterators:
+
+**Example:**
+
+```javascript
+suspend(function*() {
+    var data = yield function* subFunction(){
+        return yield fs.readFile(__filename, 'utf8', suspend.resume());
+    }
+})();
+
+```
+
+Which is the same as:
+
+```javascript
+suspend(function*() {
+    var data = yield suspend.run(function* subFunction(){
+        return yield fs.readFile(__filename, 'utf8', suspend.resume());
+    },suspend.resume());
+})();
+```
+
+And if you want to pass parameters, you can call the generator function as well, and yield the result:
+
+```javascript
+function* readIt(name){
+    return yield fs.readFile(name, 'utf8', suspend.resume());
+}
+
+suspend(function*() {
+    var data = yield readIt(__filename);
+})();
+
+```
+
 ---
 
 ### `suspend.resume()`
